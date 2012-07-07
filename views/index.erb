@@ -1,0 +1,42 @@
+<html>
+<head>
+  <title>Issues by Assignee</title>
+</head>
+<body>
+
+<table border="0" cellpadding="0" cellspacing="0">
+<% @repo.issues_by_assignee.each do |assignee, issues|%>
+  <tbody>
+  <tr>
+    <td>
+      <span class="assignee-wrapper">
+        <h2>
+          <% if assignee %>
+            <img height="30" width="30" src="<%= assignee['avatar_url'] %>">
+            <a href="https://github.com/<%= assignee['login'] %>"><%= assignee['login'] %></a>
+            <a href="<%= @repo.assigned_url(assignee['login'])%>">(<%= issues.count %>)</a>
+          <% else %>
+            unassigned
+          <% end %>
+        </h2>
+      </span>
+    </td>
+  </tr>
+  <% issues.each do |issue|%>
+    <tr class="issue">
+      <td class="number">
+        #<%= issue['number'] %>
+      </td>
+      <td class="info">
+        <div class="wrapper">
+          <h3>
+            <a href="<%= issue['html_url'] %>"><%= issue['title']%></a>
+          </h3>
+        </div>
+      </td>
+    </tr>
+  <% end %>
+  </tbody>
+<% end %>
+</body>
+</html>
