@@ -7,7 +7,7 @@ require 'pp'
 
 set :port, ARGV[0] || 8080
 
-get '/:user/:repo' do
+get '/issues/:user/:repo' do
   begin
     @repo = Repo.new(cookies[:token], params)
     erb :index
@@ -21,7 +21,7 @@ get '/:user/:repo' do
   end
 end
 
-get '/authorize' do
+get '/issues/authorize' do
   response = github.post("https://github.com/login/oauth/access_token",
     :client_id     => ENV['client_id'],
     :client_secret => ENV['client_secret'],
