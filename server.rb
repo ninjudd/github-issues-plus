@@ -5,6 +5,8 @@ require 'faraday'
 require 'faraday_middleware'
 require 'pp'
 
+set :port, ARGV[0] || 8080
+
 get '/:user/:repo' do
   begin
     @repo = Repo.new(cookies[:token], params)
@@ -24,7 +26,7 @@ get '/authorize' do
     :client_id     => ENV['client_id'],
     :client_secret => ENV['client_secret'],
     :code          => params[:code],
-    :state         => params[:state],
+    :state         => params[:state]
   )
   cookies[:token] = response.body['access_token']
 
