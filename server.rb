@@ -1,15 +1,15 @@
 require 'rubygems'
 require 'sinatra'
-require 'sinatra/cookies'
 require 'faraday'
 require 'faraday_middleware'
 require 'pp'
 
 set :port, ARGV[0] || 8080
+enable :sessions
 
 get '/issues/:user/:repo' do
   begin
-    @repo = Repo.new(cookies[:token], params)
+    @repo = Repo.new(session[:token], params)
     erb :index
   rescue Repo::HttpError
     url = github.build_url("/login/oauth/authorize", {
@@ -28,7 +28,7 @@ get '/issues/authorize' do
     :code          => params[:code],
     :state         => params[:state]
   )
-  cookies[:token] = response.body['access_token']
+  session[:token] = response.body['access_token']
 
   redirect params[:state]
 end
