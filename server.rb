@@ -10,13 +10,33 @@ get '/:user/:repo' do
     @repo = Repo.new(cookies[:token], params)
     erb :index
   rescue Repo::HttpError
-    erb :login
+    url = github.build_url("/login/oauth/authorize", {
+      :client_id => ENV['client_id'],
+      :scope     => 'repo',
+      :state     => request.url,
+    })
+    redirect url.to_s
   end
 end
 
-post '/:user/:repo' do
-  cookies[:token] = params[:username]
-  redirect to("/#{params[:user]}/#{params[:repo]}")
+get '/authorize' do
+  response = github.post("https://github.com/login/oauth/access_token",
+    :client_id     => ENV['client_id'],
+    :client_secret => ENV['client_secret'],
+    :code          => params[:code],
+    :state         => params[:state],
+  )
+  cookies[:token] = response.body['access_token']
+
+  redirect params[:state]
+end
+
+def github
+  @github ||= Faraday.new(:url => "https://github.com/", :headers => { :accept =>  'application/json'}) do |conn|
+    conn.request :json
+    conn.response :json
+    conn.adapter Faraday.default_adapter
+  end
 end
 
 class Repo
@@ -65,13 +85,14 @@ class Repo
 
   def http
     @http ||= Faraday.new(:url => url) do |conn|
+      conn.request :oauth2, token
       conn.response :json
       conn.adapter Faraday.default_adapter
     end
   end
 
   def http_get(path, params = {})
-    response = http.get(path, params.merge(:access_token => token, :per_page => 100))
+    response = http.get(path, params.merge(:per_page => 100))
     raise HttpError, response.body['message'] unless response.status == 200
 
     if next_link = link_header(:next, response.headers)
