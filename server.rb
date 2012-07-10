@@ -75,7 +75,7 @@ class Repo
   end
 
   def group_by
-    @group_by ||= (opts[:group_by] || 'assignee').to_sym
+    @group_by ||= (opts[:group_by] || 'milestone').to_sym
   end
 
   def group_description
