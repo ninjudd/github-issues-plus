@@ -78,6 +78,10 @@ class Repo
     @group_by ||= (opts[:group_by] || 'milestone').to_sym
   end
 
+  def name
+    "#{opts[:user]}/#{opts[:repo]}"
+  end
+
   def group_description
     issues = "issues"
 
@@ -92,7 +96,7 @@ class Repo
     issues = "#{opts[:state]} #{issues}"           if opts[:state]
     issues = "#{opts[:assignee]}'s #{issues}"      if opts[:assignee]
     issues = "#{issues} labelled #{opts[:labels]}" if opts[:labels]
-    "#{opts[:user]}/#{opts[:repo]} - #{issues} (by #{group_by})"
+    "#{issues} (by #{group_by})"
   end
 
   def issues_by
