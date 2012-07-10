@@ -1,22 +1,28 @@
 <html>
 <head>
-  <title>Issues by Assignee</title>
+  <title>Issues by <%= @repo.group_by %></title>
 </head>
 <body>
 
 <table border="0" cellpadding="0" cellspacing="0">
-<% @repo.issues_by_assignee.each do |assignee, issues|%>
+<% @repo.issues_by.each do |group, issues|%>
   <tbody>
   <tr>
     <td>
-      <span class="assignee-wrapper">
+      <span class="group-wrapper">
         <h2>
-          <% if assignee %>
-            <img height="30" width="30" src="<%= assignee['avatar_url'] %>">
-            <a href="https://github.com/<%= assignee['login'] %>"><%= assignee['login'] %></a>
-            <a href="<%= @repo.assigned_url(assignee['login'])%>">(<%= issues.count %>)</a>
-          <% else %>
-            unassigned
+          <% if @repo.group_by == 'assignee' %>
+            <img height="30" width="30" src="<%= group['avatar_url'] %>">
+            <a href="https://github.com/<%= group['login'] %>">
+              <%= @repo.group_name(group) %>
+            </a>
+            <a href="<%= @repo.group_url(group)%>">
+              (<%= issues.count %>)
+            </a>
+          <% elsif @repo.group_by == 'milestone' %>
+            <a href="<%= @repo.group_url(group)%>">
+              <%= @repo.group_name(group) %> (<%= issues.count %>)
+            </a>
           <% end %>
         </h2>
       </span>

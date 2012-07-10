@@ -9,7 +9,8 @@ enable :sessions
 
 get '/issues/:user/:repo' do
   begin
-    @repo = Repo.new(session[:token], params)
+    token = session[:token]
+    @repo = Repo.new(token, params)
     erb :index
   rescue Repo::HttpError
     url = github.build_url("/login/oauth/authorize", {
@@ -26,7 +27,7 @@ get '/issues/authorize' do
     :client_id     => ENV['client_id'],
     :client_secret => ENV['client_secret'],
     :code          => params[:code],
-    :state         => params[:state]
+    :state         => params[:state],
   )
   session[:token] = response.body['access_token']
 
@@ -55,7 +56,8 @@ class Repo
     params = {
       :state     => opts[:state],
       :labels    => opts[:labels],
-      :milestone => milestone_number(opts[:milestone])
+      :milestone => opts[:milestone],
+      :assignee  => opts[:assignee],
     }
     params.delete_if {|k,v| v.nil?}
     params
@@ -65,11 +67,15 @@ class Repo
     http_get('issues', http_params.merge(:per_page  => 100))
   end
 
-  def issues_by_assignee
+  def group_by
+    opts[:group_by] || 'assignee'
+  end
+
+  def issues_by
     issues.group_by do |issue|
-      issue['assignee']
-    end.sort_by do |assignee, issues|
-      -(assignee ? issues.count : 0)
+      issue[group_by]
+    end.sort_by do |group, issues|
+      -(group ? issues.count : 0)
     end
   end
 
@@ -81,8 +87,24 @@ class Repo
     "https://github.com/#{opts[:user]}/#{opts[:repo]}"
   end
 
-  def assigned_url(login)
-    http.build_url("#{html_url}/issues/assigned/#{login}", http_params)
+  def group_url(group)
+    case group_by
+    when 'assignee' then
+      assignee = group ? group['login'] : 'none'
+      http.build_url("#{html_url}/issues/assigned/#{assignee}", http_params)
+    when 'milestone' then
+      milestone = group ? group['number'] : 'none'
+      http.build_url("#{html_url}/issues", http_params.merge(:milestone => milestone))
+    end
+  end
+
+  def group_name(group)
+    case group_by
+    when 'assignee' then
+      group ? group['login'] : 'unassigned'
+    when 'milestone' then
+      group ? group['title'] : 'no milestone'
+    end
   end
 
   def http
@@ -112,17 +134,6 @@ class Repo
       end
       link.scan(/<([^>]+)>/).first.first if link
     end
-  end
-
-  def milestone_number(title)
-    return unless title
-
-    [:open, :closed].each do |state|
-      http_get('milestones', :state => state).each do |milestone|
-        return milestone['number'] if milestone['title'] == title
-      end
-    end
-    nil
   end
 end
 
