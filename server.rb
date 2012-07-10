@@ -2,6 +2,7 @@ require 'rubygems'
 require 'sinatra'
 require 'faraday'
 require 'faraday_middleware'
+require 'json'
 require 'pp'
 
 set :port, ARGV[0] || 8080
@@ -42,6 +43,12 @@ def github
   end
 end
 
+def make_url(host, query_params)
+  params = Faraday::Utils::ParamsHash.new
+  params.update(query_params)
+  "#{host}?#{params.to_query}"
+end
+
 class Repo
   class HttpError < Exception; end
 
@@ -68,12 +75,29 @@ class Repo
   end
 
   def group_by
-    opts[:group_by] || 'assignee'
+    @group_by ||= (opts[:group_by] || 'assignee').to_sym
+  end
+
+  def group_description
+    issues = "issues"
+
+    if number = opts[:milestone]
+      if number == 'none'
+        issues = "#{issues} with no milestone"
+      else
+        milestone   = http_get("milestones/#{number}")['title']
+        issues = "#{milestone} #{issues}"
+      end
+    end
+    issues = "#{opts[:state]} #{issues}"           if opts[:state]
+    issues = "#{opts[:assignee]}'s #{issues}"      if opts[:assignee]
+    issues = "#{issues} labelled #{opts[:labels]}" if opts[:labels]
+    "#{opts[:user]}/#{opts[:repo]} - #{issues} (by #{group_by})"
   end
 
   def issues_by
     issues.group_by do |issue|
-      issue[group_by]
+      issue[group_by.to_s]
     end.sort_by do |group, issues|
       -(group ? issues.count : 0)
     end
@@ -89,22 +113,37 @@ class Repo
 
   def group_url(group)
     case group_by
-    when 'assignee' then
-      assignee = group ? group['login'] : 'none'
-      http.build_url("#{html_url}/issues/assigned/#{assignee}", http_params)
-    when 'milestone' then
-      milestone = group ? group['number'] : 'none'
-      http.build_url("#{html_url}/issues", http_params.merge(:milestone => milestone))
+    when :assignee then
+      http.build_url("#{html_url}/issues/assigned/#{group_id(group)}", http_params)
+    when :milestone then
+      http.build_url("#{html_url}/issues", http_params.merge(:milestone => group_id(group)))
     end
+  end
+
+  def pivot_url(group)
+    pivot = case group_by
+    when :milestone then :assignee
+    when :assignee  then :milestone
+    end
+
+    params = http_params.dup
+    params.delete(pivot)
+    make_url('', params.merge(group_by => group_id(group), :group_by => pivot))
   end
 
   def group_name(group)
     case group_by
-    when 'assignee' then
+    when :assignee then
       group ? group['login'] : 'unassigned'
-    when 'milestone' then
+    when :milestone then
       group ? group['title'] : 'no milestone'
     end
+  end
+
+  def group_id(group)
+    return 'none' unless group
+    return group['login'] if group_by == :assignee
+    group['number']
   end
 
   def http
@@ -117,7 +156,9 @@ class Repo
 
   def http_get(path, params = {})
     response = http.get(path, params.merge(:per_page => 100))
-    raise HttpError, response.body['message'] unless response.status == 200
+    if response.status != 200
+      raise Repo::HttpError, "HTTP #{response.status}: #{response.body['message']}"
+    end
 
     if next_link = link_header(:next, response.headers)
       rest = http_get(next_link)

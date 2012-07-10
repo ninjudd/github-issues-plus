@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>Issues by <%= @repo.group_by %></title>
+  <title><%= @repo.group_description %></title>
 </head>
 <body>
 
@@ -11,19 +11,15 @@
     <td>
       <span class="group-wrapper">
         <h2>
-          <% if @repo.group_by == 'assignee' %>
+          <% if group and @repo.group_by == :assignee %>
             <img height="30" width="30" src="<%= group['avatar_url'] %>">
-            <a href="https://github.com/<%= group['login'] %>">
-              <%= @repo.group_name(group) %>
-            </a>
-            <a href="<%= @repo.group_url(group)%>">
-              (<%= issues.count %>)
-            </a>
-          <% elsif @repo.group_by == 'milestone' %>
-            <a href="<%= @repo.group_url(group)%>">
-              <%= @repo.group_name(group) %> (<%= issues.count %>)
-            </a>
           <% end %>
+          <a href="<%= @repo.pivot_url(group)%>">
+            <%= @repo.group_name(group) %>
+          </a>
+          (<a href="<%= @repo.group_url(group)%>">
+            <%= issues.count %>
+          </a>)
         </h2>
       </span>
     </td>
