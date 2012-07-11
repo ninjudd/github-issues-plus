@@ -3,8 +3,4 @@ require 'rubygems'
 require 'bundler/setup'
 require 'app'
 
-App.set :port => ARGV[0] || 8080,
-        :app_file => __FILE__,
-        :static => true
-
-App.run!
+run App
