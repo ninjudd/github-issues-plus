@@ -1,2 +1,1 @@
-rvm use 1.9.2@issues --create
-rvm gemset import
+rvm use 1.9.3@github-issues-plus --create

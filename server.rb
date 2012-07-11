@@ -1,5 +1,6 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/lib')
 require 'rubygems'
+require 'bundler/setup'
 require 'app'
 
 App.set :port => ARGV[0] || 8080,
