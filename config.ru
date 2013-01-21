@@ -3,7 +3,7 @@ require 'rubygems'
 require 'bundler/setup'
 require 'app'
 
-App.set :root, File.dirname(__FILE__)
+App.set :root, File.realpath(File.dirname(__FILE__))
 
 require 'data_mapper'
 require 'hook'
