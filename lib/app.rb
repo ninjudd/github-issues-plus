@@ -25,7 +25,7 @@ class App < Sinatra::Base
       erb :index
     else
       url = oauth.build_url("/login/oauth/authorize", {
-        :client_id => ENV['client_id'],
+        :client_id => settings.client_id,
         :scope     => 'repo',
         :state     => request.url,
       })
@@ -35,8 +35,8 @@ class App < Sinatra::Base
 
   get '/issues/authorize' do
     response = oauth.post("/login/oauth/access_token",
-      :client_id     => ENV['client_id'],
-      :client_secret => ENV['client_secret'],
+      :client_id     => settings.client_id,
+      :client_secret => settings.client_secret,
       :code          => params[:code],
       :state         => params[:state],
     )

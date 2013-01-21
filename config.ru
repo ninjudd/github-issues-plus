@@ -4,6 +4,8 @@ require 'bundler/setup'
 require 'app'
 
 App.set :root, File.realpath(File.dirname(__FILE__))
+App.set :client_id, ENV['client_id']
+App.set :client_secret, ENV['client_secret']
 
 require 'data_mapper'
 require 'hook'
