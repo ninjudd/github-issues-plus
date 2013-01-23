@@ -33,7 +33,7 @@ class Hook
   def message_labels(body)
     if prefix = label_prefix
       body = scrub_prefixes(body, ['milestone_prefix', 'assignee_prefix'])
-      body.scan(/#{prefix}(#{TOKEN_REGEX})/).map(&:first)
+      body.scan(/(^|\s)#{prefix}(#{TOKEN_REGEX})/).map(&:last)
     else
       []
     end
