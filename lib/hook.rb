@@ -2,7 +2,6 @@ class Hook
   include DataMapper::Resource
 
   property :repo,                         String, :key => true
-  property :access_token,                 String
   property :label_prefix,                 String
   property :milestone_prefix,             String
   property :assignee_prefix,              String

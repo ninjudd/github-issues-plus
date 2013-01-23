@@ -1,0 +1,16 @@
+<h1><%= @hook.repo %> hook</h1>
+<form action="/hooks/<%= @hook.repo %>" method="post" accept-charset="utf-8">
+  <% @hook.attributes.each do |key, value| %>
+    <% next if key == :repo %>
+    <p>
+      <%= key %>
+      <% if key == :substitutions %>
+        <br/>
+        <textarea name="hook[<%= key %>]" rows="4" cols="60"><%= value.to_json %></textarea>
+      <% else %>
+        <input type="text" name="hook[<%= key %>]" value="<%= value %>"/>
+      <% end %>
+    </p>
+  <% end %>
+  <p><input type="submit" value="Update hook" /></p>
+</form>

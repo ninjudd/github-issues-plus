@@ -39,7 +39,19 @@ class App < Sinatra::Base
     end
   end
 
-  get '/issues/authorize' do
+  get '/hooks/:user/:repo' do
+    @hook = Hook.first_or_create(repo_name)
+    erb :hook
+  end
+
+  post '/hooks/:user/:repo' do
+    hook = Hook.get(repo_name)
+    params[:hook].delete_if {|k,v| v.empty?}
+    hook.update(params[:hook])
+    redirect "/hooks/#{repo_name}"
+  end
+
+  get '/authorize' do
     response = oauth.post("/login/oauth/access_token",
       :client_id     => settings.client_id,
       :client_secret => settings.client_secret,
