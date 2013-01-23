@@ -20,7 +20,7 @@ class Issue
   end
 
   def url
-    "#{repo.url}/issues/#{number}"
+    "#{repo.url}/issues/#{number}?access_token=#{token}"
   end
 
   def labels
@@ -51,7 +51,7 @@ class Issue
   end
 
   def set_labels!(labels)
-    body = update_issue!(:labels => labels)
+    body = update!(:labels => labels.to_a)
 
     if missing = (body['errors'] || []).detect {|e| e['code'] == 'missing'}
       set_labels!(labels - missing['value'])

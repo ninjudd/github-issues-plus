@@ -41,15 +41,15 @@ class Hook
 
   def scrub_prefixes(body, prefixes)
     prefixes.each do |prefix|
-      body = body.gsub(send(prefix), '') if data[prefix]
+      body = body.gsub(send(prefix), '') if prefix
     end
     body
   end
 
-  def message_milestone(body)
+  def message_milestone(repo, body)
     if prefix = milestone_prefix
       title = body.scan(/#{prefix}(#{TOKEN_REGEX})/).map(&:first).last
-      milestone_number(title)
+      repo.milestone_number(title)
     end
   end
 

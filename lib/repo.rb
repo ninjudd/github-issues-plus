@@ -3,14 +3,14 @@ require 'helpers'
 class Repo
   include Helpers
 
-  attr_reader :name
-  attr_accessor :token, :opts
+  attr_reader :name, :opts
+  attr_accessor :token
 
-  def initialize(data = {}, token = nil)
-    data = {'full_name' => data} if data.kind_of?(String)
+  def initialize(data = {}, opts = {})
+    data  = {'full_name' => data} if data.kind_of?(String)
     @name = data.delete('full_name')
     @data = data unless data.empty?
-    @opts = {}
+    @opts = opts
   end
 
   def filter_params
