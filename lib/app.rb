@@ -51,7 +51,7 @@ class App < Sinatra::Base
   get '/hooks/:user/:repo' do
     return "Access Denied" unless repo_admin?
 
-    @hook = Hook.first_or_create(repo_name)
+    @hook = Hook.first_or_create(:repo => repo_name)
     erb :hook
   end
 
