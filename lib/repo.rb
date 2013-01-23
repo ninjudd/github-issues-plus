@@ -13,6 +13,13 @@ class Repo
     @opts = opts
   end
 
+  def admin?
+    if permissions = http_get('')['permissions']
+      pp permissions
+      permissions['admin']
+    end
+  end
+
   def filter_params
     params = {
       :state     => opts[:state],

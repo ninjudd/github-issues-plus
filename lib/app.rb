@@ -24,11 +24,10 @@ class App < Sinatra::Base
     "#{params[:user]}/#{params[:repo]}"
   end
 
-  get '/issues/:user/:repo' do
+  def init_repo
     if token = session[:token]
       @repo = Repo.new(repo_name, params)
       @repo.token = token
-      erb :index
     else
       url = oauth.build_url("/login/oauth/authorize", {
         :client_id => settings.client_id,
@@ -39,12 +38,26 @@ class App < Sinatra::Base
     end
   end
 
+  def repo_admin?
+    init_repo
+    repo.admin?
+  end
+
+  get '/issues/:user/:repo' do
+    init_repo
+    erb :index
+  end
+
   get '/hooks/:user/:repo' do
+    return "Access Denied" unless repo_admin?
+
     @hook = Hook.first_or_create(repo_name)
     erb :hook
   end
 
   post '/hooks/:user/:repo' do
+    return "Access Denied" unless repo_admin?
+
     hook = Hook.get(repo_name)
     params[:hook].delete_if {|k,v| v.empty?}
     hook.update(params[:hook])
