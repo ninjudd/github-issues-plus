@@ -12,9 +12,13 @@ class Hook
   property :update_labels_when_commented, String
   property :substitutions,                Json
 
+  def words(body)
+    body.split(/\s+/)
+  end
+
   def action_labels(action)
     if update_labels = send("update_labels_when_#{action}")
-      update_labels.split(/,\s*/)
+      words(update_labels)
     else
       []
     end
@@ -37,10 +41,6 @@ class Hook
 
   def addition(label)
     strip_prefix(label, label_prefix)
-  end
-
-  def words(body)
-    body.scan(/\s/)
   end
 
   def message_labels(body)
