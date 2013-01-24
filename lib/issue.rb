@@ -39,8 +39,8 @@ class Issue
       labels.each do |label|
         if remove_label = hook.removal(label)
           new_labels.delete(remove_label)
-        else
-          new_labels << label
+        elsif add_label = hook.addition(label)
+          new_labels << add_label
         end
       end
 
