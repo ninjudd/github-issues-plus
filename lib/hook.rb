@@ -60,6 +60,7 @@ class Hook
         return repo.milestone_number(milestone)
       end
     end if milestone_prefix
+    nil
   end
 
   def message_assignee(body)
@@ -68,5 +69,6 @@ class Hook
         return user
       end
     end if assignee_prefix
+    nil
   end
 end
