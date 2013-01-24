@@ -101,7 +101,8 @@ class App < Sinatra::Base
       labels = repo.hook.action_labels(:commented) + repo.hook.message_labels(comment.body)
       issue.update_labels!(labels)
     else
-      labels = repo.hook.action_labels(payload['action'])
+      action = payload['action']
+      labels = repo.hook.action_labels(action)
 
       if action == 'opened'
         labels += repo.hook.message_labels(issue.body)
