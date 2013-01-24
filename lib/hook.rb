@@ -32,7 +32,7 @@ class Hook
   end
 
   def strip_prefix(label, prefix)
-    label[(prefix.length)..-1] if label.start_with?(prefix)
+    label[prefix.length..-1] if label.start_with?(prefix)
   end
 
   def removal(label)
