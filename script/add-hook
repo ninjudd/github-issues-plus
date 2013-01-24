@@ -1,0 +1,29 @@
+#!/usr/bin/env ruby
+require 'json'
+require 'uri'
+
+def prompt(string)
+  $stdout.write(string)
+  $stdout.flush
+  $stdin.readline.chomp
+end
+
+unless ARGV.size == 3
+  puts "Usage: ./script/add-hook [repo] [host] [token]"
+  exit 1
+end
+repo, host, token = ARGV
+
+puts "About to hook #{repo} up to github-issues-plus on #{host}"
+admin = prompt("Provide an admin access_token to proceed: ")
+
+opts = {
+  :name => "web",
+  :config => {:url => "#{host}/hook?access_token=#{token}"},
+  :events => ["issues", "issue_comment"],
+}
+cmd = "curl https://api.github.com/repos/#{repo}/hooks?access_token=#{admin} -d '#{opts.to_json}'"
+
+puts cmd
+system cmd
+
